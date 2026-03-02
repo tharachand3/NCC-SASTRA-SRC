@@ -94,6 +94,7 @@ export default function AdminLayout() {
             <Tabs.Screen name="add-announcement" options={{ href: null }} />
             <Tabs.Screen name="attendance-history" options={{ href: null }} />
             <Tabs.Screen name="attendance-detail" options={{ href: null }} />
+            <Tabs.Screen name="add-admin" options={{ href: null }} />
         </Tabs>
     );
 }

@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyD-aJbc3OsIwfF-p4dFf286rAIKTg6pYDI",
+  apiKey: "AIzaSyBM2deRgsKwpM9UDvmYeD7DsSLLikdEnGw",
   authDomain: "ncc-sastra-src.firebaseapp.com",
   projectId: "ncc-sastra-src",
   storageBucket: "ncc-sastra-src.firebasestorage.app",

@@ -1,8 +1,10 @@
 import { Card } from '@/components/ui/Card';
-import { Text } from '@/components/ui/Text';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
+import { Text } from '@/components/ui/Text';
+import { auth } from '@/config/firebase';
 import { COLORS } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -10,8 +12,8 @@ import {
     Platform,
     ScrollView,
     StyleSheet,
-    
     TextInput,
+    TouchableOpacity,
     View
 } from 'react-native';
 
@@ -20,6 +22,20 @@ export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const handleResetPassword = async () => {
+        if (!email.trim()) {
+            Alert.alert('Email Required', 'Please enter your email above to reset your password.');
+            return;
+        }
+        try {
+            await sendPasswordResetEmail(auth, email.trim());
+            Alert.alert('Reset Email Sent', 'Check your inbox for password reset instructions.');
+        } catch (error: any) {
+            console.log("Reset Password Error:", error.code, error.message);
+            Alert.alert('Error', error.message || 'Failed to send reset email.');
+        }
+    };
 
     const handleLogin = async () => {
         if (!email.trim() || !password.trim()) {
@@ -31,13 +47,18 @@ export default function LoginScreen() {
             await login(email.trim(), password);
             // Navigation handled by RouteGuard in _layout.tsx
         } catch (error: any) {
-            let msg = 'Login failed. Please try again.';
+            console.log("Login Error [Full Details]:", error.code, error.message);
+            let msg = error.message;
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password') {
                 msg = 'Invalid email or password.';
             } else if (error.code === 'auth/user-not-found') {
                 msg = 'No account found with this email.';
+            } else if (error.code === 'auth/invalid-email') {
+                msg = 'Invalid email address.';
             } else if (error.code === 'auth/too-many-requests') {
                 msg = 'Too many attempts. Please try again later.';
+            } else if (error.code === 'auth/network-request-failed') {
+                msg = 'Network error. Please check your internet connection.';
             }
             Alert.alert('Login Failed', msg);
         } finally {
@@ -93,6 +114,10 @@ export default function LoginScreen() {
                         loading={loading}
                         style={styles.loginBtn}
                     />
+
+                    <TouchableOpacity onPress={handleResetPassword} style={styles.resetBtn}>
+                        <Text style={styles.resetText}>Forgot Password?</Text>
+                    </TouchableOpacity>
                 </Card>
 
                 {/* Footer */}
@@ -190,6 +215,16 @@ const styles = StyleSheet.create({
     loginBtn: {
         marginTop: 12,
         height: 52,
+    },
+    resetBtn: {
+        alignItems: 'center',
+        paddingVertical: 12,
+        marginTop: 4,
+    },
+    resetText: {
+        color: COLORS.primary,
+        fontSize: 14,
+        fontWeight: '600',
     },
     footer: {
         textAlign: 'center',

@@ -1,12 +1,12 @@
-import { db } from '@/config/firebase';
 import { Text } from '@/components/ui/Text';
+import { db } from '@/config/firebase';
 import { COLORS } from '@/constants/Colors';
 import { useAuth } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet,  TouchableOpacity, View } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { Card } from '../../components/ui/Card';
 import { SectionHeader } from '../../components/ui/SectionHeader';
@@ -135,6 +135,9 @@ export default function AdminDashboard() {
                     <Text style={styles.name}>{userProfile?.fullName ?? 'Admin'}</Text>
                 </View>
                 <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+                    <TouchableOpacity onPress={() => router.push('/(admin)/add-admin')} style={styles.iconBtn}>
+                        <Ionicons name="person-add-outline" size={24} color={COLORS.primary} />
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => router.push('/(admin)/messages')} style={styles.iconBtn}>
                         <Ionicons name="chatbubbles-outline" size={24} color={COLORS.primary} />
                     </TouchableOpacity>
@@ -201,7 +204,7 @@ export default function AdminDashboard() {
 
                 <View style={{ height: 40 }} />
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 

@@ -35,9 +35,13 @@ function RouteGuard({ children }: { children: React.ReactNode }) {
     } else if (userProfile?.role === 'admin') {
       // Admin — redirect to admin dashboard
       if (!inAdminGroup) router.replace('/(admin)/dashboard');
-    } else if (userProfile?.role === 'cadet') {
-      // Cadet — check for mandatory password change
-      if (userProfile.mustChangePassword) {
+    } else if (userProfile) {
+      // Non-admin logic (cadet or unassigned)
+      if (inAdminGroup) {
+        // Guard against non-admins trying to access admin routes
+        router.replace('/(cadet)/dashboard');
+      } else if (userProfile.mustChangePassword) {
+        // Cadet — check for mandatory password change
         if (segments[1] !== 'change-password') {
           router.replace('/(cadet)/change-password');
         }
