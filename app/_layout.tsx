@@ -1,12 +1,12 @@
 import { COLORS } from '@/constants/Colors';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  Inter_800ExtraBold,
-  useFonts
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold,
+    useFonts
 } from '@expo-google-fonts/inter';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -18,43 +18,68 @@ SplashScreen.preventAutoHideAsync();
 
 // Route guard: redirect based on auth state and role
 function RouteGuard({ children }: { children: React.ReactNode }) {
-  const { user, userProfile, loading } = useAuth();
+  const { user, userProfile, cadetRequest, loading, loadingRequest } = useAuth();
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || loadingRequest) return;
 
     const inAuthGroup = segments[0] === '(auth)';
     const inAdminGroup = segments[0] === '(admin)';
     const inCadetGroup = segments[0] === '(cadet)';
 
     if (!user) {
-      // Not signed in — always go to login
-      if (!inAuthGroup) router.replace('/(auth)/login');
+      // Not signed in — allow signup page but nothing else
+      const isSignup = inCadetGroup && segments[1] === 'signup';
+      if (!inAuthGroup && !isSignup) router.replace('/(auth)/login');
     } else if (userProfile?.role === 'admin') {
       // Admin — redirect to admin dashboard
       if (!inAdminGroup) router.replace('/(admin)/dashboard');
-    } else if (userProfile) {
-      // Non-admin logic (cadet or unassigned)
+    } else {
+      // User is not admin (possibly cadet or just created auth account)
+      // determine next screen based on profile/request state
+
+      // if there's a pending or rejected registration request, show pending screen
+      if ((!userProfile || userProfile.status !== 'active') && cadetRequest) {
+        // user has submitted a request
+        if (cadetRequest.status === 'pending') {
+          if (!(inCadetGroup && segments[1] === 'pending')) {
+            router.replace('/(cadet)/pending');
+          }
+          return;
+        } else if (cadetRequest.status === 'rejected') {
+          // let them edit/submit again
+          if (!(inCadetGroup && segments[1] === 'register')) {
+            router.replace('/(cadet)/register');
+          }
+          return;
+        }
+      }
+
+      // if profile does not exist or is incomplete, send to registration
+      if (!userProfile || (userProfile.role === 'cadet' && (!userProfile.fullName || !userProfile.registerNumber))) {
+        if (!(inCadetGroup && segments[1] === 'register')) {
+          router.replace('/(cadet)/register');
+        }
+        return;
+      }
+
+      // finally do the normal cadet routing logic
       if (inAdminGroup) {
-        // Guard against non-admins trying to access admin routes
         router.replace('/(cadet)/dashboard');
       } else if (userProfile.mustChangePassword) {
-        // Cadet — check for mandatory password change
         if (segments[1] !== 'change-password') {
           router.replace('/(cadet)/change-password');
         }
       } else {
-        // Redirect to dashboard if they are outside cadet group or on the change-password screen
         if (!inCadetGroup || segments[1] === 'change-password') {
           router.replace('/(cadet)/dashboard');
         }
       }
     }
-  }, [user, userProfile, loading, segments]);
-
-  if (loading) {
+  }, [user, userProfile, cadetRequest, loading, loadingRequest, segments]);
+  if (loading || loadingRequest) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.navy }}>
         <ActivityIndicator size="large" color={COLORS.white} />

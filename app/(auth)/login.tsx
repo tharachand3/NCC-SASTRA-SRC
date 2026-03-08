@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Card } from '@/components/ui/Card';
 import { PrimaryButton } from '@/components/ui/PrimaryButton';
 import { Text } from '@/components/ui/Text';
@@ -18,6 +19,7 @@ import {
 } from 'react-native';
 
 export default function LoginScreen() {
+    const router = useRouter();
     const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -114,6 +116,10 @@ export default function LoginScreen() {
                         loading={loading}
                         style={styles.loginBtn}
                     />
+
+                    <TouchableOpacity onPress={() => router.push('/(cadet)/signup')} style={styles.createBtn}>
+                        <Text style={styles.createText}>Create Account</Text>
+                    </TouchableOpacity>
 
                     <TouchableOpacity onPress={handleResetPassword} style={styles.resetBtn}>
                         <Text style={styles.resetText}>Forgot Password?</Text>
@@ -215,6 +221,16 @@ const styles = StyleSheet.create({
     loginBtn: {
         marginTop: 12,
         height: 52,
+    },
+    createBtn: {
+        alignItems: 'center',
+        paddingVertical: 12,
+        marginTop: 4,
+    },
+    createText: {
+        color: COLORS.primary,
+        fontSize: 14,
+        fontWeight: '600',
     },
     resetBtn: {
         alignItems: 'center',

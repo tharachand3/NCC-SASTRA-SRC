@@ -1,5 +1,5 @@
-import { db } from '@/config/firebase';
 import { Text } from '@/components/ui/Text';
+import { db } from '@/config/firebase';
 import { COLORS } from '@/constants/Colors';
 import { useAuth, UserProfile } from '@/context/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,7 +21,7 @@ import {
     SafeAreaView,
     ScrollView,
     StyleSheet,
-    
+
     TextInput,
     TouchableOpacity,
     View
@@ -29,6 +29,9 @@ import {
 
 import { Card } from '../../components/ui/Card';
 import { PrimaryButton } from '../../components/ui/PrimaryButton';
+
+// Note: Install react-native-calendars if not already: npx expo install react-native-calendars
+import { Calendar } from 'react-native-calendars';
 
 // ─── Date helpers ────────────────────────────────────────────────────
 function formatDate(d: Date): string {
@@ -52,6 +55,7 @@ export default function AdminAttendanceScreen() {
     const [eventName, setEventName] = useState<string>('');
     const [pointsValue, setPointsValue] = useState<string>('');
     const [showSuccessToast, setShowSuccessToast] = useState(false);
+    const [showCalendar, setShowCalendar] = useState(false);
 
     // Cadets
     const [cadets, setCadets] = useState<UserProfile[]>([]);
@@ -231,6 +235,44 @@ export default function AdminAttendanceScreen() {
                                 <Ionicons name="chevron-forward" size={22} color={COLORS.text} />
                             </TouchableOpacity>
                         </View>
+                        <TouchableOpacity onPress={() => setShowCalendar(!showCalendar)} style={styles.calendarToggle}>
+                            <Ionicons name={showCalendar ? "calendar-outline" : "calendar"} size={20} color={COLORS.primary} />
+                            <Text style={styles.calendarToggleText}>
+                                {showCalendar ? 'Hide Calendar' : 'Pick Date from Calendar'}
+                            </Text>
+                        </TouchableOpacity>
+                        {showCalendar && (
+                            <View style={styles.calendarContainer}>
+                                <Calendar
+                                    onDayPress={(day) => {
+                                        const newDate = new Date(day.dateString);
+                                        setSelectedDate(newDate);
+                                        setShowCalendar(false);
+                                    }}
+                                    markedDates={{
+                                        [isoDate(selectedDate)]: { selected: true, selectedColor: COLORS.primary }
+                                    }}
+                                    theme={{
+                                        backgroundColor: COLORS.card,
+                                        calendarBackground: COLORS.card,
+                                        textSectionTitleColor: COLORS.text,
+                                        selectedDayBackgroundColor: COLORS.primary,
+                                        selectedDayTextColor: COLORS.white,
+                                        todayTextColor: COLORS.primary,
+                                        dayTextColor: COLORS.text,
+                                        textDisabledColor: COLORS.textMuted,
+                                        dotColor: COLORS.primary,
+                                        selectedDotColor: COLORS.white,
+                                        arrowColor: COLORS.primary,
+                                        monthTextColor: COLORS.text,
+                                        indicatorColor: COLORS.primary,
+                                        textDayFontSize: 14,
+                                        textMonthFontSize: 16,
+                                        textDayHeaderFontSize: 12
+                                    }}
+                                />
+                            </View>
+                        )}
                     </Card>
 
                     <Card style={{ marginBottom: 16 }}>
@@ -418,6 +460,28 @@ const styles = StyleSheet.create({
         paddingVertical: 2,
         borderRadius: 10,
         letterSpacing: 1,
+    },
+    calendarToggle: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 12,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        backgroundColor: COLORS.primaryLight,
+        borderRadius: 8,
+    },
+    calendarToggleText: {
+        marginLeft: 8,
+        fontSize: 14,
+        color: COLORS.primary,
+        fontWeight: '600',
+    },
+    calendarContainer: {
+        marginTop: 12,
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: COLORS.card,
     },
     // Input Fields
     inputLabel: {

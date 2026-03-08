@@ -28,6 +28,7 @@ interface DashboardStats {
     totalSessions: number;
     avgAttendance: number;
     pendingDocs: number;
+    pendingRequests: number;
 }
 
 interface RankedCadet {
@@ -45,7 +46,8 @@ export default function AdminDashboard() {
         alumni: 0,
         totalSessions: 0,
         avgAttendance: 0,
-        pendingDocs: 0
+        pendingDocs: 0,
+        pendingRequests: 0,
     });
     const [topCadets, setTopCadets] = useState<RankedCadet[]>([]);
     const [loading, setLoading] = useState(true);
@@ -120,6 +122,19 @@ export default function AdminDashboard() {
             setStats(prev => ({ ...prev, pendingDocs: count }));
         });
 
+        // Cadet requests listener
+        const qReq = query(collection(db, 'cadet_requests'), where('status', '==', 'pending'));
+        const unsubReq = onSnapshot(qReq, (snap) => {
+            setStats(prev => ({ ...prev, pendingRequests: snap.docs.length }));
+        });
+
+        return () => {
+            unsubUsers();
+            unsubAtt();
+            unsubDocs();
+            unsubReq();
+        };
+
         return () => {
             unsubUsers();
             unsubAtt();
@@ -166,6 +181,7 @@ export default function AdminDashboard() {
                         <View style={styles.statsGrid}>
                             <StatCard title="Avg Attendance" value={`${stats.avgAttendance}%`} icon="analytics" color={COLORS.success} />
                             <StatCard title="Pending Docs" value={stats.pendingDocs} icon="document-text" color={COLORS.warning} />
+                        <StatCard title="New Cadet Requests" value={stats.pendingRequests} icon="people" color={COLORS.primary} onPress={() => router.push('/(admin)/cadet-requests')} />
                         </View>
 
                         <SectionHeader

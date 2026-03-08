@@ -1,8 +1,8 @@
-import { COLORS } from '@/constants/Colors';
 import { Text } from '@/components/ui/Text';
+import { COLORS } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet,  View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Card } from './Card';
 
 interface StatCardProps {
@@ -10,11 +10,15 @@ interface StatCardProps {
     value: string | number;
     icon: any;
     color?: string;
+    onPress?: () => void;
 }
 
-export const StatCard = ({ title, value, icon, color = COLORS.primary }: StatCardProps) => {
+export const StatCard = ({ title, value, icon, color = COLORS.primary, onPress }: StatCardProps) => {
+    const Container: any = onPress ? TouchableOpacity : Card;
+    const containerProps = onPress ? { onPress } : {};
+
     return (
-        <Card style={styles.container}>
+        <Container style={styles.container} {...containerProps}>
             <View style={[styles.iconContainer, { backgroundColor: color + '15' }]}>
                 <Ionicons name={icon} size={24} color={color} />
             </View>
@@ -22,7 +26,7 @@ export const StatCard = ({ title, value, icon, color = COLORS.primary }: StatCar
                 <Text style={styles.value} numberOfLines={1}>{value}</Text>
                 <Text style={styles.title} numberOfLines={1}>{title}</Text>
             </View>
-        </Card>
+        </Container>
     );
 };
 
